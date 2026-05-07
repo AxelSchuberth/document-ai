@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+uploads/*
+last_uploaded.txt
+.DS_Store
+.idea/

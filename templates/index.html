@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Document AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>Document AI</h1>
+        <p class="subtitle">
+            Sök, verifiera och markera stöd direkt i dokumentet.
+        </p>
+    </div>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          class="upload-form">
+
+        <input type="file"
+               name="pdf"
+               accept="application/pdf">
+
+        <button type="submit">
+            Ladda upp PDF
+        </button>
+    </form>
+</header>
+
+{% if filename %}
+
+<main class="layout">
+
+    <aside class="sidebar">
+
+        <section class="panel">
+            <h2>Dokumentsökning</h2>
+
+            <form method="post"
+                  class="search-form">
+
+                <input type="text"
+                       name="query"
+                       placeholder="Fråga dokumentet..."
+                       value="{{ query }}"
+                       class="search-input">
+
+                <button type="submit"
+                        class="search-button">
+                    Sök
+                </button>
+            </form>
+        </section>
+
+        <section class="panel">
+
+            <div class="section-header">
+                <h2>Svar från dokumentet</h2>
+                <span class="badge">Verifierbart</span>
+            </div>
+
+            {% if query %}
+                <p class="small-text">
+                    Fråga: "{{ query }}"
+                </p>
+            {% endif %}
+
+            {% if semantic_results %}
+
+                {% for chunk in semantic_results %}
+
+                    <article class="answer-card">
+
+                        <div class="answer-top">
+                            <h3>
+                                {{ loop.index }}. Relevant information
+                            </h3>
+
+                            <span class="score-pill {{ chunk.confidence_class }}">
+                                {{ chunk.confidence_label }}
+                            </span>
+                        </div>
+
+                        <div class="evidence-blocks">
+
+                            {% for sentence in chunk.best_sentences %}
+                                <div class="evidence-block">
+                                    {{ sentence }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="answer-footer">
+                            <p class="source-text">
+                                Källa: sida {{ chunk.page }}
+                                · Intern score {{ chunk.final_score }}
+                            </p>
+
+                            <button class="source-button"
+                                    onclick='scrollToSentences("chunk-{{ chunk.id }}", {{ chunk.best_sentences | tojson }})'>
+                                Visa i dokumentet
+                            </button>
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <article class="answer-card muted-card">
+                    <h3>Inget tydligt stöd hittades</h3>
+
+                    <p class="answer-summary">
+                        Jag hittar ingen tillräckligt säker träff i dokumentet för den här frågan.
+                    </p>
+                </article>
+
+            {% endif %}
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Viktigaste punkter</h2>
+
+            {% for chunk in important_chunks %}
+
+                <div class="chunk-card"
+                     onclick="scrollToSentences('chunk-{{ chunk.id }}', [])">
+
+                    <strong>
+                        Punkt {{ loop.index }}
+                    </strong>
+
+                    <span class="chunk-meta">
+                        Sida {{ chunk.page }} · Score {{ chunk.score }}
+                    </span>
+
+                    <p>
+                        {{ chunk.text[:220] }}...
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </section>
+
+    </aside>
+
+    <section class="document">
+
+        <div class="document-header">
+            <h2>{{ filename }}</h2>
+            <span class="document-status">Uppladdad PDF</span>
+        </div>
+
+        {% for chunk in chunks %}
+
+            <article class="page"
+                     id="chunk-{{ chunk.id }}">
+
+                <h3>
+                    Chunk {{ chunk.id }}
+                    <span>— Sida {{ chunk.page }}</span>
+                </h3>
+
+                <p class="chunk-text">
+
+                    {% for sentence in chunk.sentences %}
+
+                        <span class="sentence">
+                            {{ sentence }}
+                        </span>
+
+                    {% endfor %}
+
+                </p>
+
+            </article>
+
+        {% endfor %}
+
+    </section>
+
+</main>
+
+{% else %}
+
+<section class="empty-state">
+    <h2>Ladda upp ett dokument för att börja</h2>
+    <p>
+        Appen extraherar text, delar upp dokumentet i chunks och låter dig hitta verifierbara svar med källmarkering.
+    </p>
+</section>
+
+{% endif %}
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
