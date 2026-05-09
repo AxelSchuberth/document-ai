@@ -63,6 +63,17 @@
                 <h2>Svar från dokumentet</h2>
                 <span class="badge">Verifierbart</span>
             </div>
+            {% if ai_answer %}
+
+    <div class="ai-answer-box">
+        <h3>AI-svar</h3>
+
+        <p class="ai-answer-text">
+            {{ ai_answer }}
+        </p>
+    </div>
+
+{% endif %}
 
             {% if query %}
                 <p class="small-text">
