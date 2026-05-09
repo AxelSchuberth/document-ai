@@ -332,3 +332,22 @@ button:hover {
     background: #fee2e2;
     color: #b91c1c;
 }
+
+.evidence-group {
+    padding-top: 14px;
+    margin-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.evidence-group:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.evidence-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}

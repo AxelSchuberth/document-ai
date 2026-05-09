@@ -1,8 +1,9 @@
 from sentence_transformers import SentenceTransformer
+from services.text_utils import split_into_sentences
 import numpy as np
 import re
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 STOPWORDS = {
     "vad", "är", "i", "på", "om", "och", "som", "det", "den",
@@ -68,17 +69,6 @@ def keyword_score(query, chunk_text, query_intent="information"):
             score += 0.25
 
     return score
-
-
-def split_into_sentences(text):
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-
-    return [
-        sentence.strip()
-        for sentence in sentences
-        if sentence.strip()
-    ]
-
 
 def get_location_sentences(query, chunk_text, max_sentences=3):
     sentences = split_into_sentences(chunk_text)

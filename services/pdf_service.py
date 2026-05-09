@@ -1,15 +1,6 @@
 import fitz
-import re
 
-
-def split_into_sentences(text):
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-
-    return [
-        sentence.strip()
-        for sentence in sentences
-        if sentence.strip()
-    ]
+from services.text_utils import split_into_sentences
 
 
 def create_sentence_chunks(all_sentences, max_words=220):
@@ -28,12 +19,10 @@ def create_sentence_chunks(all_sentences, max_words=220):
             start_page = page
 
         if current_word_count + word_count > max_words and current_sentences:
-            chunk_text = " ".join(current_sentences)
-
             chunks.append({
                 "id": chunk_id,
                 "page": start_page,
-                "text": chunk_text
+                "text": " ".join(current_sentences)
             })
 
             chunk_id += 1
@@ -45,12 +34,10 @@ def create_sentence_chunks(all_sentences, max_words=220):
         current_word_count += word_count
 
     if current_sentences:
-        chunk_text = " ".join(current_sentences)
-
         chunks.append({
             "id": chunk_id,
             "page": start_page,
-            "text": chunk_text
+            "text": " ".join(current_sentences)
         })
 
     return chunks

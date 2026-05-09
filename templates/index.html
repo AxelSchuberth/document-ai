@@ -72,47 +72,58 @@
 
             {% if semantic_results %}
 
-                {% for chunk in semantic_results %}
+    <article class="answer-card">
 
-                    <article class="answer-card">
+        <div class="answer-top">
+            <h3>
+                Svar från dokumentet
+            </h3>
 
-                        <div class="answer-top">
-                            <h3>
-                                {{ loop.index }}. Relevant information
-                            </h3>
+            {% set top_result = semantic_results[0] %}
 
-                            <span class="score-pill {{ chunk.confidence_class }}">
-                                {{ chunk.confidence_label }}
-                            </span>
+            <span class="score-pill {{ top_result.confidence_class }}">
+                {{ top_result.confidence_label }}
+            </span>
+        </div>
+
+        <div class="evidence-blocks">
+
+            {% for chunk in semantic_results %}
+
+                <div class="evidence-group">
+
+                    <div class="evidence-group-header">
+                        <strong>
+                            Stöd {{ loop.index }}
+                        </strong>
+
+                        <span class="source-text">
+                            Sida {{ chunk.page }}
+                        </span>
+                    </div>
+
+                    {% for sentence in chunk.best_sentences %}
+
+                        <div class="evidence-block">
+                            {{ sentence }}
                         </div>
 
-                        <div class="evidence-blocks">
+                    {% endfor %}
 
-                            {% for sentence in chunk.best_sentences %}
-                                <div class="evidence-block">
-                                    {{ sentence }}
-                                </div>
-                            {% endfor %}
+                    <button class="source-button"
+                            onclick='scrollToSentences("chunk-{{ chunk.id }}", {{ chunk.best_sentences | tojson }})'>
+                        Visa i dokumentet
+                    </button>
 
-                        </div>
+                </div>
 
-                        <div class="answer-footer">
-                            <p class="source-text">
-                                Källa: sida {{ chunk.page }}
-                                · Intern score {{ chunk.final_score }}
-                            </p>
+            {% endfor %}
 
-                            <button class="source-button"
-                                    onclick='scrollToSentences("chunk-{{ chunk.id }}", {{ chunk.best_sentences | tojson }})'>
-                                Visa i dokumentet
-                            </button>
-                        </div>
+        </div>
 
-                    </article>
+    </article>
 
-                {% endfor %}
-
-            {% else %}
+{% else %}
 
                 <article class="answer-card muted-card">
                     <h3>Inget tydligt stöd hittades</h3>

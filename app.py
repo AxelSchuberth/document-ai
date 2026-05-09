@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 import os
 
 from services.pdf_service import extract_pdf_text
@@ -11,35 +11,58 @@ from services.embedding_service import (
 from services.query_service import detect_query_intent
 
 app = Flask(__name__)
+app.secret_key = "dev-secret-key-change-later"
 
 UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+DOCUMENT_CACHE = {}
+
+
+def get_file_cache_key(path):
+    stat = os.stat(path)
+    return f"{path}-{stat.st_mtime}-{stat.st_size}"
+
+
+def process_document(path):
+    cache_key = get_file_cache_key(path)
+
+    if cache_key in DOCUMENT_CACHE:
+        return DOCUMENT_CACHE[cache_key]
+
+    pages, chunks = extract_pdf_text(path)
+    chunks = add_sentences_to_chunks(chunks)
+    important_chunks = get_important_chunks(chunks)
+    embeddings = create_embeddings(chunks)
+
+    DOCUMENT_CACHE[cache_key] = {
+        "pages": pages,
+        "chunks": chunks,
+        "important_chunks": important_chunks,
+        "embeddings": embeddings
+    }
+
+    return DOCUMENT_CACHE[cache_key]
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-
     filename = None
-
     pages = []
     chunks = []
-
     important_chunks = []
-
     semantic_results = []
     query = ""
     query_intent = ""
 
     if request.method == "POST":
-
         query = request.form.get("query", "")
 
         file = request.files.get("pdf")
 
         if file and file.filename.endswith(".pdf"):
-
             filename = file.filename
 
             path = os.path.join(
@@ -48,29 +71,23 @@ def index():
             )
 
             file.save(path)
+            session["filename"] = filename
 
-            with open("last_uploaded.txt", "w", encoding="utf-8") as f:
-                f.write(filename)
+        filename = session.get("filename")
 
-        if os.path.exists("last_uploaded.txt"):
-
-            with open("last_uploaded.txt", "r", encoding="utf-8") as f:
-                filename = f.read().strip()
-
+        if filename:
             path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
                 filename
             )
 
             if os.path.exists(path):
+                document_data = process_document(path)
 
-                pages, chunks = extract_pdf_text(path)
-
-                chunks = add_sentences_to_chunks(chunks)
-
-                important_chunks = get_important_chunks(chunks)
-
-                embeddings = create_embeddings(chunks)
+                pages = document_data["pages"]
+                chunks = document_data["chunks"]
+                important_chunks = document_data["important_chunks"]
+                embeddings = document_data["embeddings"]
 
                 if not query:
                     query = "vad är viktigast i dokumentet"
@@ -82,13 +99,12 @@ def index():
                         query,
                         chunks,
                         embeddings,
-                        limit=5,
+                        limit=8,
                         min_score=0.20,
                         keyword_weight=1.0,
                         semantic_weight=0.15,
                         query_intent=query_intent
                     )
-
                 else:
                     semantic_results = search_chunks(
                         query,
