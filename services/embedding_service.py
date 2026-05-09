@@ -29,18 +29,92 @@ def get_location_keywords(query):
     keywords = extract_keywords(query)
 
     expansions = {
-        "sammanfattning": ["sammanfattning", "sammanfattningsvis"],
-        "slutsats": ["slutsats", "slutsatsen", "bör", "projektet bör"],
-        "risk": ["risk", "risker", "säkerhetsrisk"],
-        "risker": ["risk", "risker", "säkerhetsrisk"],
-        "mål": ["mål", "syfte"],
-        "syfte": ["syfte", "mål"],
+
+        "sammanfattning": [
+            "sammanfattning",
+            "sammanfattningsvis",
+            "översikt"
+        ],
+
+        "slutsats": [
+            "slutsats",
+            "slutsatsen",
+            "slutligen",
+            "sammanfattningsvis",
+            "rekommendation"
+        ],
+
+        "risk": [
+            "risk",
+            "risker",
+            "problem",
+            "utmaning",
+            "utmaningar",
+            "hinder",
+            "hot"
+        ],
+
+        "risker": [
+            "risk",
+            "risker",
+            "problem",
+            "utmaningar",
+            "hinder",
+            "hot"
+        ],
+
+        "problem": [
+            "problem",
+            "risk",
+            "risker",
+            "utmaning",
+            "hinder",
+            "svårighet"
+        ],
+
+        "mål": [
+            "mål",
+            "syfte",
+            "ambition",
+            "avsikt"
+        ],
+
+        "syfte": [
+            "syfte",
+            "mål",
+            "avsikt",
+            "anledning"
+        ],
+
         "ställningstagande": [
             "ställningstagande",
             "bör",
             "rekommenderas",
             "slutsats",
             "projektet bör"
+        ],
+
+        "rekommendation": [
+            "rekommendation",
+            "bör",
+            "förslag",
+            "råd"
+        ],
+
+        "kostnad": [
+            "kostnad",
+            "kostnader",
+            "utgift",
+            "budget",
+            "pris"
+        ],
+
+        "säkerhet": [
+            "säkerhet",
+            "risk",
+            "skydd",
+            "hot",
+            "behörighet"
         ]
     }
 
@@ -56,17 +130,14 @@ def get_location_keywords(query):
 
 
 def keyword_score(query, chunk_text, query_intent="information"):
-    if query_intent == "location":
-        query_keywords = get_location_keywords(query)
-    else:
-        query_keywords = extract_keywords(query)
+    query_keywords = get_location_keywords(query)
 
     chunk_text = chunk_text.lower()
     score = 0
 
     for keyword in query_keywords:
         if keyword in chunk_text:
-            score += 0.25
+            score += 0.18
 
     return score
 

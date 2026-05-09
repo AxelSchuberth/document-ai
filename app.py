@@ -8,7 +8,7 @@ from services.embedding_service import (
     search_chunks,
     add_sentences_to_chunks
 )
-from services.query_service import detect_query_intent
+from services.query_service import detect_query_intent, expand_query
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key-change-later"
@@ -93,10 +93,11 @@ def index():
                     query = "vad är viktigast i dokumentet"
 
                 query_intent = detect_query_intent(query)
+                search_query = expand_query(query)
 
                 if query_intent == "location":
                     semantic_results = search_chunks(
-                        query,
+                        search_query,
                         chunks,
                         embeddings,
                         limit=8,
@@ -107,7 +108,7 @@ def index():
                     )
                 else:
                     semantic_results = search_chunks(
-                        query,
+                        search_query,
                         chunks,
                         embeddings,
                         limit=5,
