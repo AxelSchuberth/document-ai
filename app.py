@@ -13,6 +13,7 @@ from services.query_service import (
     expand_query
 )
 from services.llm_service import generate_answer
+from services.rerank_service import rerank_results
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key-change-later"
@@ -124,7 +125,7 @@ def index():
                         search_query,
                         chunks,
                         embeddings,
-                        limit=8,
+                        limit=10,
                         min_score=0.20,
                         keyword_weight=1.0,
                         semantic_weight=0.15,
@@ -137,7 +138,7 @@ def index():
                         search_query,
                         chunks,
                         embeddings,
-                        limit=5,
+                        limit=10,
                         min_score=0.25,
                         keyword_weight=0.45,
                         semantic_weight=0.55,
@@ -145,6 +146,13 @@ def index():
                     )
 
                 if semantic_results:
+
+                    semantic_results = rerank_results(
+                        query,
+                        semantic_results,
+                        limit=6
+                    )
+
                     ai_answer = generate_answer(
                         query,
                         semantic_results
