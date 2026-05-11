@@ -9,12 +9,13 @@ def build_evidence_context(evidence_chunks):
     context_parts = []
 
     for index, chunk in enumerate(evidence_chunks, start=1):
-        best_sentences = chunk.get("best_sentences", [])
 
-        if not best_sentences:
+        evidence_blocks = chunk.get("display_evidence", [])
+
+        if not evidence_blocks:
             continue
 
-        evidence_text = " ".join(best_sentences)
+        evidence_text = " ".join(evidence_blocks)
 
         context_parts.append(
             f"Stöd {index} (sida {chunk['page']}): {evidence_text}"
@@ -24,6 +25,7 @@ def build_evidence_context(evidence_chunks):
 
 
 def generate_answer(query, evidence_chunks):
+
     context = build_evidence_context(evidence_chunks)
 
     prompt = f"""
@@ -44,9 +46,11 @@ Skriv ett kort, naturligt svar på svenska.
 
 Regler:
 - Sammanfatta evidensen istället för att kopiera den ord för ord.
-- Om flera punkter nämns, skriv dem tydligt i en kort lista.
-- Om frågan handlar om risker, mål, problem eller rekommendationer: strukturera svaret i punkter.
-- Max 5 meningar eller 4 punkter.
+- Skriv helst i vanlig brödtext, inte punktlista.
+- Om flera saker nämns, väv ihop dem i 2–4 korta meningar.
+- Använd inte markdown, listpunkter, stjärnor eller numrering.
+- Skriv professionellt och tydligt.
+- Max 4 meningar.
 - Nämn inte "Stöd 1" eller interna scores i svaret.
 """
 
@@ -55,7 +59,11 @@ Regler:
         json={
             "model": MODEL_NAME,
             "prompt": prompt,
-            "stream": False
+            "stream": False,
+            "options": {
+                "temperature": 0.1,
+                "num_predict": 180
+            }
         }
     )
 
