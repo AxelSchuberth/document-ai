@@ -2,6 +2,7 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document AI</title>
 
     <link rel="stylesheet"
@@ -66,11 +67,25 @@
 
             {% if ai_answer %}
                 <div class="ai-answer-box">
-                    <h3>AI-svar</h3>
+                    <div class="ai-answer-header">
+                        <h3>AI-svar</h3>
+
+                        {% if answer_confidence %}
+                            <span class="score-pill {{ answer_confidence.class }}">
+                                {{ answer_confidence.label }}
+                            </span>
+                        {% endif %}
+                    </div>
 
                     <p class="ai-answer-text">
                         {{ ai_answer }}
                     </p>
+
+                    {% if answer_confidence %}
+                        <p class="confidence-note">
+                            {{ answer_confidence.description }}
+                        </p>
+                    {% endif %}
                 </div>
             {% endif %}
 
